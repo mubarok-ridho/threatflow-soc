@@ -1,1 +1,5 @@
-.env
+.env*.pkl
+*.joblib
+*.h5
+venv/
+__pycache__/
