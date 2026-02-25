@@ -3,3 +3,7 @@
 *.h5
 venv/
 __pycache__/
+venv/
+models/*.pkl
+models/bckup/
+.env
