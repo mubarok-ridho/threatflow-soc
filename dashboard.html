@@ -35,23 +35,15 @@ body {
   overflow-x: hidden;
 }
 
-/* Scanline overlay */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0,212,255,0.015) 2px,
-    rgba(0,212,255,0.015) 4px
-  );
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,212,255,0.015) 2px, rgba(0,212,255,0.015) 4px);
   pointer-events: none;
   z-index: 9999;
 }
 
-/* Header */
 header {
   display: flex;
   align-items: center;
@@ -64,20 +56,13 @@ header {
   z-index: 100;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
+.logo { display: flex; align-items: center; gap: 14px; }
 
 .logo-icon {
-  width: 38px;
-  height: 38px;
+  width: 38px; height: 38px;
   border: 2px solid var(--accent);
   border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   font-size: 18px;
   box-shadow: 0 0 15px rgba(0,212,255,0.3);
   animation: pulse 3s ease-in-out infinite;
@@ -88,368 +73,208 @@ header {
   50% { box-shadow: 0 0 30px rgba(0,212,255,0.6); }
 }
 
-.logo-text h1 {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--accent);
-  letter-spacing: 3px;
-  text-transform: uppercase;
-}
+.logo-text h1 { font-size: 20px; font-weight: 700; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; }
+.logo-text p  { font-size: 11px; color: var(--muted); letter-spacing: 2px; font-family: 'Share Tech Mono', monospace; }
 
-.logo-text p {
-  font-size: 11px;
-  color: var(--muted);
-  letter-spacing: 2px;
-  font-family: 'Share Tech Mono', monospace;
-}
+.header-right { display: flex; align-items: center; gap: 24px; }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
+.ws-status { display: flex; align-items: center; gap: 8px; font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--muted); }
 
-.ws-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.ws-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--muted);
-  transition: all 0.3s;
-}
-
+.ws-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); transition: all 0.3s; }
 .ws-dot.connected { background: var(--ok); box-shadow: 0 0 8px var(--ok); animation: blink 2s infinite; }
 .ws-dot.error { background: var(--danger); }
 
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-.clock {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 13px;
-  color: var(--accent);
-  letter-spacing: 2px;
-}
+.clock { font-family: 'Share Tech Mono', monospace; font-size: 13px; color: var(--accent); letter-spacing: 2px; }
 
-/* Main layout */
-main {
-  padding: 20px 28px;
-  display: grid;
-  gap: 20px;
-}
+main { padding: 20px 28px; display: grid; gap: 20px; }
 
-/* Stat cards */
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 14px;
-}
+.stat-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
 
 .stat-card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 18px 20px;
-  position: relative;
-  overflow: hidden;
-  transition: border-color 0.3s;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 18px 20px;
+  position: relative; overflow: hidden; transition: border-color 0.3s;
 }
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: var(--accent);
-}
-
+.stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent); }
 .stat-card.danger::before { background: var(--danger); }
-.stat-card.warn::before   { background: var(--warn); }
 .stat-card.ok::before     { background: var(--ok); }
 .stat-card.high::before   { background: var(--high); }
 .stat-card.medium::before { background: var(--medium); }
 
-.stat-label {
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 10px;
-  font-family: 'Share Tech Mono', monospace;
-}
-
-.stat-value {
-  font-size: 36px;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1;
-  font-family: 'Share Tech Mono', monospace;
-  transition: all 0.3s;
-}
-
+.stat-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; font-family: 'Share Tech Mono', monospace; }
+.stat-value { font-size: 36px; font-weight: 700; color: var(--text); line-height: 1; font-family: 'Share Tech Mono', monospace; transition: all 0.3s; }
 .stat-card.danger .stat-value { color: var(--danger); }
 .stat-card.ok .stat-value     { color: var(--ok); }
-.stat-card.warn .stat-value   { color: var(--warn); }
+.stat-sub { font-size: 11px; color: var(--muted); margin-top: 6px; font-family: 'Share Tech Mono', monospace; }
 
-.stat-sub {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 6px;
-  font-family: 'Share Tech Mono', monospace;
-}
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr 300px; gap: 14px; }
 
-/* Charts row */
-.charts-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 300px;
-  gap: 14px;
-}
-
-.panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 18px 20px;
-}
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
 
 .panel-title {
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 16px;
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 16px;
   font-family: 'Share Tech Mono', monospace;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: flex; align-items: center; gap: 8px;
 }
+.panel-title::before { content: ''; width: 3px; height: 12px; background: var(--accent); border-radius: 2px; }
 
-.panel-title::before {
-  content: '';
-  width: 3px;
-  height: 12px;
-  background: var(--accent);
-  border-radius: 2px;
-}
+.chart-wrap { position: relative; height: 200px; }
+.confidence-wrap { position: relative; height: 160px; display: flex; align-items: center; justify-content: center; }
+.confidence-legend { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-family: 'Share Tech Mono', monospace; }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; }
 
-.chart-wrap {
-  position: relative;
-  height: 200px;
-}
+.feed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-/* Confidence doughnut */
-.confidence-wrap {
-  position: relative;
-  height: 160px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.confidence-legend {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  font-family: 'Share Tech Mono', monospace;
-}
-
-.legend-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-}
-
-/* Event feed */
-.feed-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-.feed-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 420px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
+.feed-list { display: flex; flex-direction: column; gap: 6px; max-height: 420px; overflow-y: auto; padding-right: 4px; }
 .feed-list::-webkit-scrollbar { width: 4px; }
 .feed-list::-webkit-scrollbar-track { background: var(--dim); }
 .feed-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
 .event-item {
-  background: var(--dim);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px 14px;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 10px;
-  align-items: center;
+  background: var(--dim); border: 1px solid var(--border);
+  border-radius: 6px; padding: 10px 14px;
+  display: grid; grid-template-columns: auto 1fr auto;
+  gap: 10px; align-items: center;
   animation: slideIn 0.3s ease;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 12px;
+  font-family: 'Share Tech Mono', monospace; font-size: 12px;
 }
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(-10px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
 .event-item.anomaly {
   border-color: rgba(255,60,90,0.3);
   background: rgba(255,60,90,0.05);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.event-item.anomaly:hover {
+  background: rgba(255,60,90,0.12);
+  border-color: rgba(255,60,90,0.6);
 }
 
-.event-type {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
+@keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
 
+.event-type { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .event-type.normal  { background: var(--ok); }
 .event-type.anomaly { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
 
 .event-info { min-width: 0; }
-.event-route {
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.event-meta { color: var(--muted); font-size: 11px; }
+.event-route { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.event-meta  { color: var(--muted); font-size: 11px; }
 
-.event-score {
-  font-size: 13px;
-  font-weight: 600;
-}
-
+.event-score { font-size: 13px; font-weight: 600; }
 .score-high   { color: var(--high); }
 .score-medium { color: var(--medium); }
 .score-low    { color: var(--low); }
 .score-normal { color: var(--ok); }
 
-/* Anomaly detail table */
-.anomaly-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-  font-family: 'Share Tech Mono', monospace;
-}
+.event-click-hint { font-size: 10px; color: var(--accent); opacity: 0.6; text-align: right; margin-top: 2px; }
 
-.anomaly-table th {
-  text-align: left;
-  padding: 8px 12px;
-  color: var(--muted);
-  font-size: 10px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  border-bottom: 1px solid var(--border);
-}
-
-.anomaly-table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid rgba(15,34,54,0.5);
-  vertical-align: top;
-}
-
+/* Anomaly table */
+.anomaly-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: 'Share Tech Mono', monospace; }
+.anomaly-table th { text-align: left; padding: 8px 12px; color: var(--muted); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+.anomaly-table td { padding: 10px 12px; border-bottom: 1px solid rgba(15,34,54,0.5); vertical-align: top; }
 .anomaly-table tr:hover td { background: rgba(0,212,255,0.03); }
 
-.badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
 .badge-high   { background: rgba(255,60,90,0.2);  color: var(--high);   border: 1px solid rgba(255,60,90,0.3); }
 .badge-medium { background: rgba(255,170,0,0.2);  color: var(--medium); border: 1px solid rgba(255,170,0,0.3); }
 .badge-low    { background: rgba(255,238,0,0.2);  color: var(--low);    border: 1px solid rgba(255,238,0,0.3); }
 
-.explanation-text {
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 1.5;
-  max-width: 400px;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
+.explanation-text { color: var(--muted); font-size: 11px; line-height: 1.5; max-width: 400px; white-space: pre-wrap; word-break: break-word; }
 
-.expand-btn {
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--accent);
-  padding: 2px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 11px;
-  font-family: 'Share Tech Mono', monospace;
-  transition: all 0.2s;
-}
-
+.expand-btn { background: none; border: 1px solid var(--border); color: var(--accent); padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-family: 'Share Tech Mono', monospace; transition: all 0.2s; }
 .expand-btn:hover { background: rgba(0,212,255,0.1); }
 
-.table-wrap {
-  max-height: 400px;
-  overflow-y: auto;
-}
-
+.table-wrap { max-height: 400px; overflow-y: auto; }
 .table-wrap::-webkit-scrollbar { width: 4px; }
 .table-wrap::-webkit-scrollbar-track { background: var(--dim); }
 .table-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-/* Toast notification */
-.toast-container {
-  position: fixed;
-  top: 80px;
-  right: 24px;
-  z-index: 9998;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(6,10,15,0.85);
+  z-index: 9990;
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.2s ease;
 }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-.toast {
+.modal {
   background: var(--panel);
   border: 1px solid var(--danger);
+  border-radius: 12px;
+  width: 680px;
+  max-width: 95vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 0 40px rgba(255,60,90,0.2);
+  animation: modalIn 0.3s ease;
+}
+@keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+.modal::-webkit-scrollbar { width: 4px; }
+.modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0;
+  background: var(--panel);
+  z-index: 1;
+}
+
+.modal-title { font-size: 13px; letter-spacing: 2px; color: var(--danger); font-family: 'Share Tech Mono', monospace; }
+
+.modal-close {
+  background: none; border: 1px solid var(--border);
+  color: var(--muted); padding: 4px 10px;
+  border-radius: 4px; cursor: pointer;
+  font-family: 'Share Tech Mono', monospace; font-size: 12px;
+  transition: all 0.2s;
+}
+.modal-close:hover { border-color: var(--danger); color: var(--danger); }
+
+.modal-body { padding: 20px; }
+
+.modal-meta {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin-bottom: 20px;
+}
+
+.meta-item { background: var(--dim); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; }
+.meta-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; font-family: 'Share Tech Mono', monospace; margin-bottom: 4px; }
+.meta-value { font-size: 13px; color: var(--text); font-family: 'Share Tech Mono', monospace; }
+
+.modal-explanation {
+  background: var(--dim);
+  border: 1px solid var(--border);
   border-left: 3px solid var(--danger);
-  border-radius: 8px;
-  padding: 12px 16px;
-  min-width: 300px;
+  border-radius: 6px;
+  padding: 16px;
   font-family: 'Share Tech Mono', monospace;
   font-size: 12px;
+  line-height: 1.8;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Toast */
+.toast-container { position: fixed; top: 80px; right: 24px; z-index: 9998; display: flex; flex-direction: column; gap: 8px; }
+
+.toast {
+  background: var(--panel); border: 1px solid var(--danger);
+  border-left: 3px solid var(--danger); border-radius: 8px;
+  padding: 12px 16px; min-width: 300px;
+  font-family: 'Share Tech Mono', monospace; font-size: 12px;
   animation: toastIn 0.3s ease;
   box-shadow: 0 4px 20px rgba(255,60,90,0.2);
 }
-
-@keyframes toastIn {
-  from { opacity: 0; transform: translateX(20px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
+@keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 .toast-title { color: var(--danger); font-weight: 700; margin-bottom: 4px; }
 .toast-body  { color: var(--text); }
 </style>
@@ -474,7 +299,6 @@ main {
 </header>
 
 <main>
-  <!-- Stats -->
   <div class="stat-grid">
     <div class="stat-card">
       <div class="stat-label">Total Flows</div>
@@ -503,25 +327,18 @@ main {
     </div>
   </div>
 
-  <!-- Charts -->
   <div class="charts-grid">
     <div class="panel">
       <div class="panel-title">Flow Timeline (last 30)</div>
-      <div class="chart-wrap">
-        <canvas id="timelineChart"></canvas>
-      </div>
+      <div class="chart-wrap"><canvas id="timelineChart"></canvas></div>
     </div>
     <div class="panel">
       <div class="panel-title">Score Distribution</div>
-      <div class="chart-wrap">
-        <canvas id="scoreChart"></canvas>
-      </div>
+      <div class="chart-wrap"><canvas id="scoreChart"></canvas></div>
     </div>
     <div class="panel">
       <div class="panel-title">Confidence Level</div>
-      <div class="confidence-wrap">
-        <canvas id="confChart"></canvas>
-      </div>
+      <div class="confidence-wrap"><canvas id="confChart"></canvas></div>
       <div class="confidence-legend">
         <div class="legend-item"><div class="legend-dot" style="background:#ff3c5a"></div><span id="legHigh">HIGH: 0</span></div>
         <div class="legend-item"><div class="legend-dot" style="background:#ffaa00"></div><span id="legMed">MEDIUM: 0</span></div>
@@ -530,19 +347,17 @@ main {
     </div>
   </div>
 
-  <!-- Event feeds -->
   <div class="feed-grid">
     <div class="panel">
       <div class="panel-title">Live Event Feed</div>
       <div class="feed-list" id="eventFeed"></div>
     </div>
     <div class="panel">
-      <div class="panel-title">Recent Anomalies</div>
+      <div class="panel-title">Recent Anomalies <span style="font-size:10px;color:var(--accent);margin-left:8px;">click to view analysis</span></div>
       <div class="feed-list" id="anomalyFeed"></div>
     </div>
   </div>
 
-  <!-- Anomaly detail table -->
   <div class="panel">
     <div class="panel-title">Anomaly Detail & LLM Analysis</div>
     <div class="table-wrap">
@@ -566,23 +381,31 @@ main {
 
 <div class="toast-container" id="toastContainer"></div>
 
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" style="display:none" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">🚨 ANOMALY ANALYSIS</div>
+      <button class="modal-close" onclick="closeModal()">✕ CLOSE</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-meta" id="modalMeta"></div>
+      <div class="modal-explanation" id="modalExplanation"></div>
+    </div>
+  </div>
+</div>
+
 <script>
-// ── Clock ─────────────────────────────────────────────────────────────
+// Clock
 function updateClock() {
-  document.getElementById('clock').textContent =
-    new Date().toLocaleTimeString('id-ID', {hour12: false});
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('id-ID', {hour12: false});
 }
 setInterval(updateClock, 1000);
 updateClock();
 
-// ── Charts setup ──────────────────────────────────────────────────────
-const chartDefaults = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: { legend: { display: false } },
-};
+// Charts
+const chartDefaults = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
 
-// Timeline chart
 const timelineCtx = document.getElementById('timelineChart').getContext('2d');
 const timelineData = { labels: [], normal: [], anomaly: [] };
 const timelineChart = new Chart(timelineCtx, {
@@ -590,125 +413,118 @@ const timelineChart = new Chart(timelineCtx, {
   data: {
     labels: timelineData.labels,
     datasets: [
-      {
-        label: 'Normal',
-        data: timelineData.normal,
-        borderColor: '#00ff9d',
-        backgroundColor: 'rgba(0,255,157,0.1)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 0,
-        borderWidth: 2,
-      },
-      {
-        label: 'Anomali',
-        data: timelineData.anomaly,
-        borderColor: '#ff3c5a',
-        backgroundColor: 'rgba(255,60,90,0.1)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 0,
-        borderWidth: 2,
-      }
+      { label: 'Normal', data: timelineData.normal, borderColor: '#00ff9d', backgroundColor: 'rgba(0,255,157,0.1)', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
+      { label: 'Anomali', data: timelineData.anomaly, borderColor: '#ff3c5a', backgroundColor: 'rgba(255,60,90,0.1)', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 }
     ]
   },
   options: {
     ...chartDefaults,
     scales: {
       x: { ticks: { color: '#3a5a72', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: '#0f2236' } },
-      y: { ticks: { color: '#3a5a72', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: '#0f2236' } },
+      y: { ticks: { color: '#3a5a72', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: '#0f2236' } }
     },
     plugins: { legend: { display: true, labels: { color: '#c8dde8', font: { family: 'Share Tech Mono', size: 11 } } } }
   }
 });
 
-// Score histogram
 const scoreCtx = document.getElementById('scoreChart').getContext('2d');
 const scoreBuckets = new Array(10).fill(0);
 const scoreChart = new Chart(scoreCtx, {
   type: 'bar',
   data: {
     labels: ['0.0','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9'],
-    datasets: [{
-      data: scoreBuckets,
-      backgroundColor: [
-        '#00ff9d','#00ff9d','#00ff9d','#00ff9d','#00ff9d',
-        '#ffee00','#ffaa00','#ff7a00','#ff3c5a','#ff003c'
-      ],
-      borderRadius: 3,
-    }]
+    datasets: [{ data: scoreBuckets, backgroundColor: ['#00ff9d','#00ff9d','#00ff9d','#00ff9d','#00ff9d','#ffee00','#ffaa00','#ff7a00','#ff3c5a','#ff003c'], borderRadius: 3 }]
   },
-  options: {
-    ...chartDefaults,
-    scales: {
-      x: { ticks: { color: '#3a5a72', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: '#0f2236' } },
-      y: { ticks: { color: '#3a5a72', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: '#0f2236' } },
-    }
-  }
+  options: { ...chartDefaults, scales: { x: { ticks: { color: '#3a5a72', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: '#0f2236' } }, y: { ticks: { color: '#3a5a72', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: '#0f2236' } } } }
 });
 
-// Confidence doughnut
 const confCtx = document.getElementById('confChart').getContext('2d');
 const confChart = new Chart(confCtx, {
   type: 'doughnut',
-  data: {
-    labels: ['HIGH', 'MEDIUM', 'LOW'],
-    datasets: [{
-      data: [0, 0, 0],
-      backgroundColor: ['#ff3c5a', '#ffaa00', '#ffee00'],
-      borderWidth: 0,
-      hoverOffset: 4,
-    }]
-  },
-  options: {
-    ...chartDefaults,
-    cutout: '70%',
-  }
+  data: { labels: ['HIGH', 'MEDIUM', 'LOW'], datasets: [{ data: [0,0,0], backgroundColor: ['#ff3c5a','#ffaa00','#ffee00'], borderWidth: 0, hoverOffset: 4 }] },
+  options: { ...chartDefaults, cutout: '70%' }
 });
 
-// ── Timeline buffer ───────────────────────────────────────────────────
-let timeBuffer = [];
+// Timeline
 let tNormal = 0, tAnomaly = 0;
-
 function flushTimeline() {
-  const label = new Date().toLocaleTimeString('id-ID', {hour12: false, hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  const label = new Date().toLocaleTimeString('id-ID', {hour12: false});
   timelineData.labels.push(label);
   timelineData.normal.push(tNormal);
   timelineData.anomaly.push(tAnomaly);
   tNormal = 0; tAnomaly = 0;
-  if (timelineData.labels.length > 30) {
-    timelineData.labels.shift();
-    timelineData.normal.shift();
-    timelineData.anomaly.shift();
-  }
+  if (timelineData.labels.length > 30) { timelineData.labels.shift(); timelineData.normal.shift(); timelineData.anomaly.shift(); }
   timelineChart.update();
 }
 setInterval(flushTimeline, 5000);
 
-// ── Score histogram update ────────────────────────────────────────────
 function updateScore(score) {
   const idx = Math.min(Math.floor(score * 10), 9);
   scoreBuckets[idx]++;
   scoreChart.update();
 }
 
-// ── Stats update ─────────────────────────────────────────────────────
 function updateStats(s) {
-  document.getElementById('statTotal').textContent  = s.total_flows;
-  document.getElementById('statNormal').textContent = s.total_normal;
-  document.getElementById('statAnomaly').textContent= s.total_anomaly;
-  document.getElementById('statHigh').textContent   = s.high;
-  document.getElementById('statMedium').textContent = s.medium;
-  document.getElementById('legHigh').textContent    = `HIGH: ${s.high}`;
-  document.getElementById('legMed').textContent     = `MEDIUM: ${s.medium}`;
-  document.getElementById('legLow').textContent     = `LOW: ${s.low}`;
+  document.getElementById('statTotal').textContent   = s.total_flows;
+  document.getElementById('statNormal').textContent  = s.total_normal;
+  document.getElementById('statAnomaly').textContent = s.total_anomaly;
+  document.getElementById('statHigh').textContent    = s.high;
+  document.getElementById('statMedium').textContent  = s.medium;
+  document.getElementById('legHigh').textContent     = `HIGH: ${s.high}`;
+  document.getElementById('legMed').textContent      = `MEDIUM: ${s.medium}`;
+  document.getElementById('legLow').textContent      = `LOW: ${s.low}`;
   confChart.data.datasets[0].data = [s.high, s.medium, s.low];
   confChart.update();
 }
 
+// ── Modal ─────────────────────────────────────────────────────────────
+function openModal(ev) {
+  const time = new Date(ev.timestamp).toLocaleTimeString('id-ID', {hour12: false});
+  const badgeClass = ev.confidence === 'HIGH' ? 'badge-high' : ev.confidence === 'MEDIUM' ? 'badge-medium' : 'badge-low';
+
+  document.getElementById('modalMeta').innerHTML = `
+    <div class="meta-item">
+      <div class="meta-label">Source</div>
+      <div class="meta-value">${ev.src_ip}:${ev.src_port}</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Destination</div>
+      <div class="meta-value">${ev.dst_ip}:${ev.dst_port}</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Protocol</div>
+      <div class="meta-value">${ev.proto || '?'}</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Score / Confidence</div>
+      <div class="meta-value">${ev.score?.toFixed(4)} &nbsp; <span class="badge ${badgeClass}">${ev.confidence}</span></div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">XGBoost / CNN / ResNet</div>
+      <div class="meta-value">${ev.xgb_score?.toFixed(3)} / ${ev.cnn_score?.toFixed(3)} / ${ev.resnet_score?.toFixed(3)}</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Time</div>
+      <div class="meta-value">${time}</div>
+    </div>
+  `;
+
+  document.getElementById('modalExplanation').textContent =
+    ev.explanation || '⚠️ LLM explanation not available for this event.';
+
+  document.getElementById('modalOverlay').style.display = 'flex';
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modalOverlay')) {
+    document.getElementById('modalOverlay').style.display = 'none';
+  }
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
 // ── Event feed ────────────────────────────────────────────────────────
-function makeEventItem(ev) {
-  const isAnomaly = ev.type === 'anomaly';
+function makeEventItem(ev, clickable = false) {
   const score = ev.score || 0;
   const scoreClass = score >= 0.9 ? 'score-high' : score >= 0.7 ? 'score-medium' : score >= 0.5 ? 'score-low' : 'score-normal';
   const time = new Date(ev.timestamp).toLocaleTimeString('id-ID', {hour12: false});
@@ -718,10 +534,13 @@ function makeEventItem(ev) {
     <div class="event-type ${ev.type}"></div>
     <div class="event-info">
       <div class="event-route">${ev.src_ip}:${ev.src_port} → ${ev.dst_ip}:${ev.dst_port}</div>
-      <div class="event-meta">${time} | ${ev.proto || '?'}</div>
+      <div class="event-meta">${time} | ${ev.proto || '?'}${clickable ? ' · <span style="color:var(--accent)">click for analysis</span>' : ''}</div>
     </div>
     <div class="event-score ${scoreClass}">${score.toFixed(3)}</div>
   `;
+  if (clickable && ev.type === 'anomaly') {
+    div.addEventListener('click', () => openModal(ev));
+  }
   return div;
 }
 
@@ -731,7 +550,6 @@ function prependFeed(feedId, el, maxItems = 50) {
   while (feed.children.length > maxItems) feed.removeChild(feed.lastChild);
 }
 
-// ── Anomaly table ─────────────────────────────────────────────────────
 function addAnomalyRow(ev) {
   const tbody = document.getElementById('anomalyTable');
   const time = new Date(ev.timestamp).toLocaleTimeString('id-ID', {hour12: false});
@@ -740,6 +558,8 @@ function addAnomalyRow(ev) {
   const shortExp = explanation.length > 120 ? explanation.substring(0, 120) + '...' : explanation;
   const rowId = 'row_' + Date.now();
   const tr = document.createElement('tr');
+  tr.style.cursor = 'pointer';
+  tr.title = 'Click to view full analysis';
   tr.innerHTML = `
     <td>${time}</td>
     <td>${ev.src_ip}:${ev.src_port}</td>
@@ -753,8 +573,8 @@ function addAnomalyRow(ev) {
       ${explanation.length > 120 ? `<button class="expand-btn" onclick="toggleExp('${rowId}', this)">EXPAND</button>` : ''}
     </td>
   `;
+  tr.addEventListener('click', () => openModal(ev));
   tbody.insertBefore(tr, tbody.firstChild);
-  // max 50 rows
   while (tbody.children.length > 50) tbody.removeChild(tbody.lastChild);
 }
 
@@ -765,17 +585,19 @@ function toggleExp(id, btn) {
   btn.textContent = visible ? 'EXPAND' : 'COLLAPSE';
 }
 
-// ── Toast notification ────────────────────────────────────────────────
 function showToast(ev) {
   const container = document.getElementById('toastContainer');
   const toast = document.createElement('div');
   toast.className = 'toast';
+  toast.style.cursor = 'pointer';
   toast.innerHTML = `
-    <div class="toast-title">🚨 ANOMALI TERDETEKSI [${ev.confidence}]</div>
+    <div class="toast-title">🚨 ANOMALY DETECTED [${ev.confidence}]</div>
     <div class="toast-body">${ev.src_ip}:${ev.src_port} → ${ev.dst_ip}:${ev.dst_port} | Score: ${ev.score?.toFixed(4)}</div>
+    <div style="font-size:10px;color:var(--accent);margin-top:4px;">click to view analysis</div>
   `;
+  toast.addEventListener('click', () => { openModal(ev); toast.remove(); });
   container.appendChild(toast);
-  setTimeout(() => toast.remove(), 6000);
+  setTimeout(() => { if (toast.parentNode) toast.remove(); }, 6000);
 }
 
 // ── WebSocket ─────────────────────────────────────────────────────────
@@ -785,52 +607,29 @@ function connect() {
   const dot = document.getElementById('wsDot');
   const label = document.getElementById('wsLabel');
 
-  ws.onopen = () => {
-    dot.className = 'ws-dot connected';
-    label.textContent = 'CONNECTED';
-  };
-
-  ws.onclose = () => {
-    dot.className = 'ws-dot error';
-    label.textContent = 'RECONNECTING...';
-    setTimeout(connect, 3000);
-  };
-
-  ws.onerror = () => {
-    dot.className = 'ws-dot error';
-    label.textContent = 'ERROR';
-  };
+  ws.onopen = () => { dot.className = 'ws-dot connected'; label.textContent = 'CONNECTED'; };
+  ws.onclose = () => { dot.className = 'ws-dot error'; label.textContent = 'RECONNECTING...'; setTimeout(connect, 3000); };
+  ws.onerror = () => { dot.className = 'ws-dot error'; label.textContent = 'ERROR'; };
 
   ws.onmessage = (msg) => {
     const data = JSON.parse(msg.data);
-
     if (data.type === 'init') {
-      // Load initial state
       if (data.stats) updateStats(data.stats);
-      (data.events || []).slice().reverse().forEach(ev => {
-        prependFeed('eventFeed', makeEventItem(ev));
-        updateScore(ev.score || 0);
-      });
-      (data.anomalies || []).slice().reverse().forEach(ev => {
-        prependFeed('anomalyFeed', makeEventItem(ev));
-        addAnomalyRow(ev);
-      });
+      (data.events || []).slice().reverse().forEach(ev => { prependFeed('eventFeed', makeEventItem(ev, false)); updateScore(ev.score || 0); });
+      (data.anomalies || []).slice().reverse().forEach(ev => { prependFeed('anomalyFeed', makeEventItem(ev, true)); addAnomalyRow(ev); });
       return;
     }
-
-    // Live event
     if (data.stats) updateStats(data.stats);
     updateScore(data.score || 0);
-
     if (data.type === 'anomaly') {
       tAnomaly++;
-      prependFeed('eventFeed', makeEventItem(data));
-      prependFeed('anomalyFeed', makeEventItem(data));
+      prependFeed('eventFeed', makeEventItem(data, false));
+      prependFeed('anomalyFeed', makeEventItem(data, true));
       addAnomalyRow(data);
       if (data.confidence === 'HIGH') showToast(data);
     } else {
       tNormal++;
-      prependFeed('eventFeed', makeEventItem(data));
+      prependFeed('eventFeed', makeEventItem(data, false));
     }
   };
 }
