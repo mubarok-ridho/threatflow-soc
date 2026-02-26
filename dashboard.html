@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThreatFlow SOC</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg:       #060a0f;
+  --panel:    #0a1018;
+  --border:   #0f2236;
+  --accent:   #00d4ff;
+  --danger:   #ff3c5a;
+  --warn:     #ffaa00;
+  --ok:       #00ff9d;
+  --dim:      #1a2a3a;
+  --text:     #c8dde8;
+  --muted:    #3a5a72;
+  --high:     #ff3c5a;
+  --medium:   #ffaa00;
+  --low:      #ffee00;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scanline overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,212,255,0.015) 2px,
+    rgba(0,212,255,0.015) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Header */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(90deg, #060a0f, #091520, #060a0f);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo-icon {
+  width: 38px;
+  height: 38px;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 0 15px rgba(0,212,255,0.3);
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 15px rgba(0,212,255,0.3); }
+  50% { box-shadow: 0 0 30px rgba(0,212,255,0.6); }
+}
+
+.logo-text h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.logo-text p {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.ws-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.ws-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: all 0.3s;
+}
+
+.ws-dot.connected { background: var(--ok); box-shadow: 0 0 8px var(--ok); animation: blink 2s infinite; }
+.ws-dot.error { background: var(--danger); }
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.clock {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 2px;
+}
+
+/* Main layout */
+main {
+  padding: 20px 28px;
+  display: grid;
+  gap: 20px;
+}
+
+/* Stat cards */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+
+.stat-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+}
+
+.stat-card.danger::before { background: var(--danger); }
+.stat-card.warn::before   { background: var(--warn); }
+.stat-card.ok::before     { background: var(--ok); }
+.stat-card.high::before   { background: var(--high); }
+.stat-card.medium::before { background: var(--medium); }
+
+.stat-label {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.stat-value {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+  font-family: 'Share Tech Mono', monospace;
+  transition: all 0.3s;
+}
+
+.stat-card.danger .stat-value { color: var(--danger); }
+.stat-card.ok .stat-value     { color: var(--ok); }
+.stat-card.warn .stat-value   { color: var(--warn); }
+
+.stat-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+/* Charts row */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 300px;
+  gap: 14px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+
+.panel-title {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+  font-family: 'Share Tech Mono', monospace;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-title::before {
+  content: '';
+  width: 3px;
+  height: 12px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.chart-wrap {
+  position: relative;
+  height: 200px;
+}
+
+/* Confidence doughnut */
+.confidence-wrap {
+  position: relative;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confidence-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+/* Event feed */
+.feed-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.feed-list::-webkit-scrollbar { width: 4px; }
+.feed-list::-webkit-scrollbar-track { background: var(--dim); }
+.feed-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.event-item {
+  background: var(--dim);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  animation: slideIn 0.3s ease;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.event-item.anomaly {
+  border-color: rgba(255,60,90,0.3);
+  background: rgba(255,60,90,0.05);
+}
+
+.event-type {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.event-type.normal  { background: var(--ok); }
+.event-type.anomaly { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+
+.event-info { min-width: 0; }
+.event-route {
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.event-meta { color: var(--muted); font-size: 11px; }
+
+.event-score {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.score-high   { color: var(--high); }
+.score-medium { color: var(--medium); }
+.score-low    { color: var(--low); }
+.score-normal { color: var(--ok); }
+
+/* Anomaly detail table */
+.anomaly-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.anomaly-table th {
+  text-align: left;
+  padding: 8px 12px;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+
+.anomaly-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(15,34,54,0.5);
+  vertical-align: top;
+}
+
+.anomaly-table tr:hover td { background: rgba(0,212,255,0.03); }
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.badge-high   { background: rgba(255,60,90,0.2);  color: var(--high);   border: 1px solid rgba(255,60,90,0.3); }
+.badge-medium { background: rgba(255,170,0,0.2);  color: var(--medium); border: 1px solid rgba(255,170,0,0.3); }
+.badge-low    { background: rgba(255,238,0,0.2);  color: var(--low);    border: 1px solid rgba(255,238,0,0.3); }
+
+.explanation-text {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+  max-width: 400px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.expand-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-family: 'Share Tech Mono', monospace;
+  transition: all 0.2s;
+}
+
+.expand-btn:hover { background: rgba(0,212,255,0.1); }
+
+.table-wrap {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.table-wrap::-webkit-scrollbar { width: 4px; }
+.table-wrap::-webkit-scrollbar-track { background: var(--dim); }
+.table-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* Toast notification */
+.toast-container {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  z-index: 9998;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  background: var(--panel);
+  border: 1px solid var(--danger);
+  border-left: 3px solid var(--danger);
+  border-radius: 8px;
+  padding: 12px 16px;
+  min-width: 300px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  animation: toastIn 0.3s ease;
+  box-shadow: 0 4px 20px rgba(255,60,90,0.2);
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.toast-title { color: var(--danger); font-weight: 700; margin-bottom: 4px; }
+.toast-body  { color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div class="logo-text">
+      <h1>ThreatFlow SOC</h1>
+      <p>REALTIME NETWORK ANOMALY DETECTION</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="ws-status">
+      <div class="ws-dot" id="wsDot"></div>
+      <span id="wsLabel">CONNECTING...</span>
+    </div>
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+</header>
+
+<main>
+  <!-- Stats -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Flows</div>
+      <div class="stat-value" id="statTotal">0</div>
+      <div class="stat-sub">flows analyzed</div>
+    </div>
+    <div class="stat-card ok">
+      <div class="stat-label">Normal</div>
+      <div class="stat-value" id="statNormal">0</div>
+      <div class="stat-sub">benign traffic</div>
+    </div>
+    <div class="stat-card danger">
+      <div class="stat-label">Anomali</div>
+      <div class="stat-value" id="statAnomaly">0</div>
+      <div class="stat-sub">threats detected</div>
+    </div>
+    <div class="stat-card high">
+      <div class="stat-label">High</div>
+      <div class="stat-value" id="statHigh">0</div>
+      <div class="stat-sub">critical threats</div>
+    </div>
+    <div class="stat-card medium">
+      <div class="stat-label">Medium</div>
+      <div class="stat-value" id="statMedium">0</div>
+      <div class="stat-sub">moderate threats</div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-grid">
+    <div class="panel">
+      <div class="panel-title">Flow Timeline (last 30)</div>
+      <div class="chart-wrap">
+        <canvas id="timelineChart"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Score Distribution</div>
+      <div class="chart-wrap">
+        <canvas id="scoreChart"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Confidence Level</div>
+      <div class="confidence-wrap">
+        <canvas id="confChart"></canvas>
+      </div>
+      <div class="confidence-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#ff3c5a"></div><span id="legHigh">HIGH: 0</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ffaa00"></div><span id="legMed">MEDIUM: 0</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ffee00"></div><span id="legLow">LOW: 0</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Event feeds -->
+  <div class="feed-grid">
+    <div class="panel">
+      <div class="panel-title">Live Event Feed</div>
+      <div class="feed-list" id="eventFeed"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Recent Anomalies</div>
+      <div class="feed-list" id="anomalyFeed"></div>
+    </div>
+  </div>
+
+  <!-- Anomaly detail table -->
+  <div class="panel">
+    <div class="panel-title">Anomaly Detail & LLM Analysis</div>
+    <div class="table-wrap">
+      <table class="anomaly-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Source</th>
+            <th>Destination</th>
+            <th>Proto</th>
+            <th>Score</th>
+            <th>Confidence</th>
+            <th>LLM Analysis</th>
+          </tr>
+        </thead>
+        <tbody id="anomalyTable"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ── Clock ─────────────────────────────────────────────────────────────
+function updateClock() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('id-ID', {hour12: false});
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── Charts setup ──────────────────────────────────────────────────────
+const chartDefaults = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+};
+
+// Timeline chart
+const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+const timelineData = { labels: [], normal: [], anomaly: [] };
+const timelineChart = new Chart(timelineCtx, {
+  type: 'line',
+  data: {
+    labels: timelineData.labels,
+    datasets: [
+      {
+        label: 'Normal',
+        data: timelineData.normal,
+        borderColor: '#00ff9d',
+        backgroundColor: 'rgba(0,255,157,0.1)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 0,
+        borderWidth: 2,
+      },
+      {
+        label: 'Anomali',
+        data: timelineData.anomaly,
+        borderColor: '#ff3c5a',
+        backgroundColor: 'rgba(255,60,90,0.1)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 0,
+        borderWidth: 2,
+      }
+    ]
+  },
+  options: {
+    ...chartDefaults,
+    scales: {
+      x: { ticks: { color: '#3a5a72', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: '#0f2236' } },
+      y: { ticks: { color: '#3a5a72', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: '#0f2236' } },
+    },
+    plugins: { legend: { display: true, labels: { color: '#c8dde8', font: { family: 'Share Tech Mono', size: 11 } } } }
+  }
+});
+
+// Score histogram
+const scoreCtx = document.getElementById('scoreChart').getContext('2d');
+const scoreBuckets = new Array(10).fill(0);
+const scoreChart = new Chart(scoreCtx, {
+  type: 'bar',
+  data: {
+    labels: ['0.0','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9'],
+    datasets: [{
+      data: scoreBuckets,
+      backgroundColor: [
+        '#00ff9d','#00ff9d','#00ff9d','#00ff9d','#00ff9d',
+        '#ffee00','#ffaa00','#ff7a00','#ff3c5a','#ff003c'
+      ],
+      borderRadius: 3,
+    }]
+  },
+  options: {
+    ...chartDefaults,
+    scales: {
+      x: { ticks: { color: '#3a5a72', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: '#0f2236' } },
+      y: { ticks: { color: '#3a5a72', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: '#0f2236' } },
+    }
+  }
+});
+
+// Confidence doughnut
+const confCtx = document.getElementById('confChart').getContext('2d');
+const confChart = new Chart(confCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ['HIGH', 'MEDIUM', 'LOW'],
+    datasets: [{
+      data: [0, 0, 0],
+      backgroundColor: ['#ff3c5a', '#ffaa00', '#ffee00'],
+      borderWidth: 0,
+      hoverOffset: 4,
+    }]
+  },
+  options: {
+    ...chartDefaults,
+    cutout: '70%',
+  }
+});
+
+// ── Timeline buffer ───────────────────────────────────────────────────
+let timeBuffer = [];
+let tNormal = 0, tAnomaly = 0;
+
+function flushTimeline() {
+  const label = new Date().toLocaleTimeString('id-ID', {hour12: false, hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  timelineData.labels.push(label);
+  timelineData.normal.push(tNormal);
+  timelineData.anomaly.push(tAnomaly);
+  tNormal = 0; tAnomaly = 0;
+  if (timelineData.labels.length > 30) {
+    timelineData.labels.shift();
+    timelineData.normal.shift();
+    timelineData.anomaly.shift();
+  }
+  timelineChart.update();
+}
+setInterval(flushTimeline, 5000);
+
+// ── Score histogram update ────────────────────────────────────────────
+function updateScore(score) {
+  const idx = Math.min(Math.floor(score * 10), 9);
+  scoreBuckets[idx]++;
+  scoreChart.update();
+}
+
+// ── Stats update ─────────────────────────────────────────────────────
+function updateStats(s) {
+  document.getElementById('statTotal').textContent  = s.total_flows;
+  document.getElementById('statNormal').textContent = s.total_normal;
+  document.getElementById('statAnomaly').textContent= s.total_anomaly;
+  document.getElementById('statHigh').textContent   = s.high;
+  document.getElementById('statMedium').textContent = s.medium;
+  document.getElementById('legHigh').textContent    = `HIGH: ${s.high}`;
+  document.getElementById('legMed').textContent     = `MEDIUM: ${s.medium}`;
+  document.getElementById('legLow').textContent     = `LOW: ${s.low}`;
+  confChart.data.datasets[0].data = [s.high, s.medium, s.low];
+  confChart.update();
+}
+
+// ── Event feed ────────────────────────────────────────────────────────
+function makeEventItem(ev) {
+  const isAnomaly = ev.type === 'anomaly';
+  const score = ev.score || 0;
+  const scoreClass = score >= 0.9 ? 'score-high' : score >= 0.7 ? 'score-medium' : score >= 0.5 ? 'score-low' : 'score-normal';
+  const time = new Date(ev.timestamp).toLocaleTimeString('id-ID', {hour12: false});
+  const div = document.createElement('div');
+  div.className = `event-item ${ev.type}`;
+  div.innerHTML = `
+    <div class="event-type ${ev.type}"></div>
+    <div class="event-info">
+      <div class="event-route">${ev.src_ip}:${ev.src_port} → ${ev.dst_ip}:${ev.dst_port}</div>
+      <div class="event-meta">${time} | ${ev.proto || '?'}</div>
+    </div>
+    <div class="event-score ${scoreClass}">${score.toFixed(3)}</div>
+  `;
+  return div;
+}
+
+function prependFeed(feedId, el, maxItems = 50) {
+  const feed = document.getElementById(feedId);
+  feed.insertBefore(el, feed.firstChild);
+  while (feed.children.length > maxItems) feed.removeChild(feed.lastChild);
+}
+
+// ── Anomaly table ─────────────────────────────────────────────────────
+function addAnomalyRow(ev) {
+  const tbody = document.getElementById('anomalyTable');
+  const time = new Date(ev.timestamp).toLocaleTimeString('id-ID', {hour12: false});
+  const badgeClass = ev.confidence === 'HIGH' ? 'badge-high' : ev.confidence === 'MEDIUM' ? 'badge-medium' : 'badge-low';
+  const explanation = ev.explanation || '—';
+  const shortExp = explanation.length > 120 ? explanation.substring(0, 120) + '...' : explanation;
+  const rowId = 'row_' + Date.now();
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>${time}</td>
+    <td>${ev.src_ip}:${ev.src_port}</td>
+    <td>${ev.dst_ip}:${ev.dst_port}</td>
+    <td>${ev.proto || '?'}</td>
+    <td style="color:${ev.score >= 0.9 ? 'var(--high)' : 'var(--medium)'}">${ev.score?.toFixed(4)}</td>
+    <td><span class="badge ${badgeClass}">${ev.confidence}</span></td>
+    <td>
+      <div class="explanation-text" id="${rowId}" style="display:none">${explanation}</div>
+      <div style="color:var(--muted);font-size:11px">${shortExp}</div>
+      ${explanation.length > 120 ? `<button class="expand-btn" onclick="toggleExp('${rowId}', this)">EXPAND</button>` : ''}
+    </td>
+  `;
+  tbody.insertBefore(tr, tbody.firstChild);
+  // max 50 rows
+  while (tbody.children.length > 50) tbody.removeChild(tbody.lastChild);
+}
+
+function toggleExp(id, btn) {
+  const el = document.getElementById(id);
+  const visible = el.style.display !== 'none';
+  el.style.display = visible ? 'none' : 'block';
+  btn.textContent = visible ? 'EXPAND' : 'COLLAPSE';
+}
+
+// ── Toast notification ────────────────────────────────────────────────
+function showToast(ev) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = `
+    <div class="toast-title">🚨 ANOMALI TERDETEKSI [${ev.confidence}]</div>
+    <div class="toast-body">${ev.src_ip}:${ev.src_port} → ${ev.dst_ip}:${ev.dst_port} | Score: ${ev.score?.toFixed(4)}</div>
+  `;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 6000);
+}
+
+// ── WebSocket ─────────────────────────────────────────────────────────
+function connect() {
+  const wsUrl = `ws://192.168.145.129:8001/ws`;
+  const ws = new WebSocket(wsUrl);
+  const dot = document.getElementById('wsDot');
+  const label = document.getElementById('wsLabel');
+
+  ws.onopen = () => {
+    dot.className = 'ws-dot connected';
+    label.textContent = 'CONNECTED';
+  };
+
+  ws.onclose = () => {
+    dot.className = 'ws-dot error';
+    label.textContent = 'RECONNECTING...';
+    setTimeout(connect, 3000);
+  };
+
+  ws.onerror = () => {
+    dot.className = 'ws-dot error';
+    label.textContent = 'ERROR';
+  };
+
+  ws.onmessage = (msg) => {
+    const data = JSON.parse(msg.data);
+
+    if (data.type === 'init') {
+      // Load initial state
+      if (data.stats) updateStats(data.stats);
+      (data.events || []).slice().reverse().forEach(ev => {
+        prependFeed('eventFeed', makeEventItem(ev));
+        updateScore(ev.score || 0);
+      });
+      (data.anomalies || []).slice().reverse().forEach(ev => {
+        prependFeed('anomalyFeed', makeEventItem(ev));
+        addAnomalyRow(ev);
+      });
+      return;
+    }
+
+    // Live event
+    if (data.stats) updateStats(data.stats);
+    updateScore(data.score || 0);
+
+    if (data.type === 'anomaly') {
+      tAnomaly++;
+      prependFeed('eventFeed', makeEventItem(data));
+      prependFeed('anomalyFeed', makeEventItem(data));
+      addAnomalyRow(data);
+      if (data.confidence === 'HIGH') showToast(data);
+    } else {
+      tNormal++;
+      prependFeed('eventFeed', makeEventItem(data));
+    }
+  };
+}
+
+connect();
+</script>
+</body>
+</html>
