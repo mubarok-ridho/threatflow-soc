@@ -2,11 +2,11 @@
 
 > Realtime Network Anomaly Detection powered by Ensemble ML + LLM Explanation
 
-ThreatFlow SOC adalah sistem deteksi anomali jaringan berbasis machine learning yang terintegrasi dengan Suricata IDS dan dijelaskan oleh LLM (Groq/Llama) untuk membantu analis SOC memahami ancaman secara cepat dan akurat.
+ThreatFlow SOC is a machine learning-based network anomaly detection system integrated with Suricata IDS, explained by LLM (Groq/Llama) to help SOC analysts understand threats quickly and accurately.
 
 ---
 
-## 🏗️ Arsitektur
+## 🏗️ Architecture
 
 ```
 Network Traffic (ens160)
@@ -26,7 +26,7 @@ Ensemble ML Model:
   │   NORMAL    │ → Log
   └─────────────┘
   ┌─────────────┐
-  │   ANOMALI   │ → Groq LLM (Llama 3.3 70B) → MITRE ATT&CK Mapping
+  │   ANOMALY   │ → Groq LLM (Llama 3.3 70B) → MITRE ATT&CK Mapping
   └─────────────┘
         ↓
    FastAPI + WebSocket
@@ -42,16 +42,16 @@ Ensemble ML Model:
 - AlmaLinux 9.7+
 - Python 3.9+
 - Suricata 7.x
-- 4GB RAM minimum (8GB recommended untuk model ML)
-- Network interface aktif (contoh: `ens160`)
+- 4GB RAM minimum (8GB recommended for ML models)
+- Active network interface (e.g. `ens160`)
 
 ### Client (Windows)
-- Browser modern (Chrome/Edge/Firefox)
-- PowerShell (untuk SCP file transfer)
+- Modern browser (Chrome/Edge/Firefox)
+- PowerShell (for SCP file transfer)
 
 ---
 
-## 🚀 Instalasi
+## 🚀 Installation
 
 ### 1. Clone Repository
 
@@ -61,26 +61,26 @@ git clone https://github.com/mubarok-ridho/threatflow-soc.git
 cd threatflow-soc
 ```
 
-### 2. Install Dependencies Python
+### 2. Install Python Dependencies
 
 ```bash
-# Install pip jika belum ada
+# Install pip if not available
 sudo dnf install -y python3-pip
 
-# Install semua dependencies
+# Install all dependencies
 pip3 install -r requirements.txt --timeout 300
 
-# Install NFStream dan WebSocket support
+# Install NFStream and WebSocket support
 pip3 install nfstream
 pip3 install 'uvicorn[standard]' websockets
 ```
 
-> ⚠️ Jika `tensorflow-cpu` timeout, install terpisah:
+> ⚠️ If `tensorflow-cpu` times out, install separately:
 > ```bash
 > pip3 install tensorflow-cpu==2.19.0 --timeout 300
 > ```
 
-### 3. Install & Konfigurasi Suricata
+### 3. Install & Configure Suricata
 
 ```bash
 # Install Suricata
@@ -89,33 +89,101 @@ sudo dnf install -y suricata
 
 # Download ET Free Rules
 sudo suricata-update
-
-# Konfigurasi interface (ganti ens160 sesuai interface kamu)
-sudo sed -i 's/-i eth0/-i ens160/' /etc/sysconfig/suricata
-
-# Fix permission log
-sudo chown -R suricata:suricata /var/log/suricata/
-
-# Jalankan Suricata
-sudo systemctl enable suricata
-sudo systemctl start suricata
 ```
 
-Pastikan `eve.json` sudah mengalir:
+#### 3a. Check Network Interface
+
+Before configuration, find the active network interface name on your server:
+
+```bash
+ip link show
+```
+
+Example output:
+```
+1: lo: <LOOPBACK,UP,LOWER_UP> ...
+2: ens160: <BROADCAST,MULTICAST,UP,LOWER_UP> ...
+```
+
+Note the interface that is **UP** and connected to the network, e.g. `ens160`, `eth0`, `enp3s0`.
+
+Verify the interface has an IP address:
+```bash
+ip addr show ens160
+# or
+nmcli device status
+```
+
+#### 3b. Set Interface in Suricata
+
+Replace `ens160` with your actual interface name:
+
+```bash
+# Set interface in sysconfig
+sudo sed -i 's/-i eth0/-i ens160/' /etc/sysconfig/suricata
+
+# Verify
+cat /etc/sysconfig/suricata
+# Should show: OPTIONS="-i ens160 --user suricata"
+```
+
+Also set in `suricata.yaml`:
+```bash
+sudo sed -i 's/  - interface: eth0/  - interface: ens160/' /etc/suricata/suricata.yaml
+
+# Verify
+grep -n "interface: ens160" /etc/suricata/suricata.yaml
+```
+
+#### 3c. Enable EVE JSON Flow Output
+
+Check if `flow` is already in EVE JSON types:
+```bash
+grep -n "^\s*- flow" /etc/suricata/suricata.yaml
+```
+
+If not found, add it:
+```bash
+sed -i 's/        - pgsql:/        - flow\n        - pgsql:/' /etc/suricata/suricata.yaml
+```
+
+#### 3d. Test Config & Start Suricata
+
+```bash
+# Test configuration first
+sudo suricata -T -c /etc/suricata/suricata.yaml -v 2>&1 | tail -5
+# Expected: "Configuration provided was successfully loaded"
+
+# Fix log permissions
+sudo chown -R suricata:suricata /var/log/suricata/
+
+# Enable and start
+sudo systemctl enable suricata
+sudo systemctl daemon-reload
+sudo systemctl start suricata
+sudo systemctl status suricata
+```
+
+Verify `eve.json` is flowing:
 ```bash
 sudo tail -f /var/log/suricata/eve.json
 ```
 
-### 4. Copy Model Files
-
-Model tidak ikut di repo karena ukurannya besar. Copy manual dari mesin lokal:
-
-```powershell
-# Dari Windows PowerShell
-scp -r D:\soc-ml-pipeline\models root@<IP_SERVER>:/opt/threatflow-soc/
+Expected output:
+```json
+{"timestamp":"2026-02-26T05:03:13+0700","event_type":"flow","src_ip":"192.168.145.1",...}
 ```
 
-Pastikan file berikut ada di folder `models/`:
+### 4. Copy Model Files
+
+Model files are not included in the repo due to large file size. Copy them manually from your local machine:
+
+```powershell
+# From Windows PowerShell
+scp -r D:\soc-ml-pipeline\models root@<SERVER_IP>:/opt/threatflow-soc/
+```
+
+Ensure the following files exist in the `models/` folder:
 ```
 models/
 ├── xgboost_model.pkl
@@ -124,7 +192,7 @@ models/
 └── scaler.pkl
 ```
 
-### 5. Buat File .env
+### 5. Create .env File
 
 ```bash
 cat > /opt/threatflow-soc/.env << 'EOF'
@@ -133,9 +201,9 @@ GEMINI_API_KEY=your_gemini_api_key_here
 EOF
 ```
 
-Dapatkan API key Groq gratis di: https://console.groq.com
+Get a free Groq API key at: https://console.groq.com
 
-### 6. Buka Port Firewall
+### 6. Open Firewall Port
 
 ```bash
 sudo firewall-cmd --add-port=8001/tcp --permanent
@@ -144,64 +212,72 @@ sudo firewall-cmd --reload
 
 ---
 
-## ▶️ Menjalankan
+## ▶️ Running the System
 
-### Terminal 1 — Suricata (pastikan sudah running)
+### Terminal 1 — Verify Suricata is Running
 
 ```bash
 sudo systemctl start suricata
 sudo journalctl -u suricata -f
 ```
 
-### Terminal 2 — Dashboard Server
+### Terminal 2 — Start Dashboard Server
 
 ```bash
 cd /opt/threatflow-soc
 uvicorn dashboard_server:app --host 0.0.0.0 --port 8001
 ```
 
+Wait until you see:
+```
+✅ All models loaded successfully!
+INFO: Uvicorn running on http://0.0.0.0:8001
+```
+
 ### Browser (Windows/Client)
 
-Buka file `dashboard.html` langsung di browser:
+Open `dashboard.html` directly in your browser:
 ```
 file:///D:/soc-ml-pipeline/dashboard.html
 ```
 
-> ⚠️ Pastikan baris WebSocket di `dashboard.html` sudah mengarah ke IP server:
+> ⚠️ Make sure the WebSocket URL in `dashboard.html` points to your server IP:
 > ```javascript
-> const wsUrl = `ws://<IP_SERVER>:8001/ws`;
+> const wsUrl = `ws://<SERVER_IP>:8001/ws`;
 > ```
 
----
-
-## 📊 Fitur Dashboard
-
-| Fitur | Deskripsi |
-|-------|-----------|
-| **Live Event Feed** | Stream realtime semua flow yang dianalisis |
-| **Recent Anomalies** | Daftar anomali terbaru dengan score |
-| **Flow Timeline** | Grafik normal vs anomali per 5 detik |
-| **Score Distribution** | Histogram distribusi ensemble score |
-| **Confidence Level** | Donut chart HIGH/MEDIUM/LOW |
-| **Anomaly Table** | Detail lengkap + LLM analysis per anomali |
-| **Toast Notification** | Pop-up alert untuk anomali HIGH confidence |
+The status indicator in the top right corner should show **CONNECTED** (green blinking dot).
 
 ---
 
-## 🔧 Konfigurasi
+## 📊 Dashboard Features
 
-### Threshold Detection
+| Feature | Description |
+|---------|-------------|
+| **Live Event Feed** | Realtime stream of all analyzed flows |
+| **Recent Anomalies** | Latest anomalies with scores |
+| **Flow Timeline** | Normal vs anomaly chart per 5 seconds |
+| **Score Distribution** | Histogram of ensemble score distribution |
+| **Confidence Level** | Donut chart for HIGH/MEDIUM/LOW |
+| **Anomaly Table** | Full details + LLM analysis per anomaly |
+| **Toast Notification** | Pop-up alert for HIGH confidence anomalies |
 
-Edit `config.py` untuk mengubah sensitivitas deteksi:
+---
+
+## 🔧 Configuration
+
+### Detection Threshold
+
+Edit `config.py` to adjust detection sensitivity:
 
 ```python
-ANOMALY_THRESHOLD = 0.80  # 0.0 - 1.0 (lebih tinggi = lebih selektif)
+ANOMALY_THRESHOLD = 0.80  # 0.0 - 1.0 (higher = more selective)
 ```
 
-Rekomendasi:
-- `0.70` — Sensitif, lebih banyak alert (cocok untuk monitoring ketat)
+Recommendations:
+- `0.70` — Sensitive, more alerts (good for strict monitoring)
 - `0.80` — Balanced (default)
-- `0.90` — Konservatif, hanya alert yang sangat mencurigakan
+- `0.90` — Conservative, only highly suspicious traffic
 
 ### Ensemble Weights
 
@@ -215,15 +291,15 @@ WEIGHT_RESNET  = 0.30
 
 Edit `dashboard_server.py`:
 ```python
-idle_timeout=30,    # flow dianggap selesai setelah 30s idle
-active_timeout=300, # max 5 menit per flow
+idle_timeout=30,    # flow considered complete after 30s idle
+active_timeout=300, # max 5 minutes per flow
 ```
 
 ---
 
 ## 🧪 Testing
 
-### Generate Traffic Normal
+### Generate Normal Traffic
 
 ```bash
 for i in {1..5}; do
@@ -234,15 +310,15 @@ for i in {1..5}; do
 done
 ```
 
-### Simulasi Anomali
+### Simulate Anomalous Traffic
 
 ```bash
-# Port scan
+# Port scan simulation
 for port in 22 23 80 443 3306 5432 8080 8443; do
     timeout 1 bash -c "echo > /dev/tcp/192.168.145.1/$port" 2>/dev/null
 done
 
-# Connection flood
+# Connection flood simulation
 for i in {1..30}; do
     curl -s --max-time 1 http://192.168.145.1:$((RANDOM % 9000 + 1000)) > /dev/null 2>&1 &
 done
@@ -251,24 +327,24 @@ wait
 
 ---
 
-## 📁 Struktur Project
+## 📁 Project Structure
 
 ```
 threatflow-soc/
 ├── app/
 │   ├── __init__.py
 │   ├── gemini.py          # LLM explanation (Groq/Llama)
-│   ├── main.py            # FastAPI app utama
+│   ├── main.py            # Main FastAPI app
 │   ├── predictor.py       # Ensemble ML predictor
 │   └── schemas.py         # Pydantic schemas
-├── models/                # Model files (tidak di-commit)
+├── models/                # Model files (not committed to git)
 │   ├── xgboost_model.pkl
 │   ├── cnn_model.keras
 │   ├── resnet_best.keras
 │   └── scaler.pkl
-├── config.py              # Konfigurasi global
+├── config.py              # Global configuration
 ├── dashboard_server.py    # FastAPI + WebSocket server
-├── dashboard.html         # SOC Dashboard (buka di browser Windows)
+├── dashboard.html         # SOC Dashboard (open in Windows browser)
 ├── nfstream_to_ml.py      # NFStream → ML pipeline (standalone)
 ├── eve_to_ml.py           # EVE JSON → ML pipeline (standalone)
 ├── requirements.txt
@@ -277,62 +353,60 @@ threatflow-soc/
 
 ---
 
-## 🔍 Output LLM
+## 🔍 LLM Output Example
 
-Setiap anomali yang terdeteksi akan dianalisis oleh Llama 3.3 70B dan menghasilkan:
+Every detected anomaly is analyzed by Llama 3.3 70B and produces:
 
 ```
-🚨 [HIGH] Serangan Port Scan / Port Scanning Attack
+🚨 [HIGH] Port Scanning Attack
 
 📌 MITRE: T1046 - Network Service Discovery
 
-📋 [ID] Sistem mendeteksi anomali dengan skor 0.9916...
-📋 [EN] System detected anomaly with score 0.9916...
+📋 [EN] System detected anomaly with ensemble score 0.9916, indicating
+        possible port scanning activity targeting multiple ports.
 
-💥 [ID] Potensi reconnaissance untuk serangan lebih lanjut
-💥 [EN] Potential reconnaissance for further attacks
+💥 [EN] Potential reconnaissance for further attacks on exposed services.
 
-🛡️ [ID] Blokir IP sumber dan aktifkan IPS mode
-🛡️ [EN] Block source IP and enable IPS mode
+🛡️ [EN] Block source IP, enable IPS mode, review firewall rules.
 
-🔍 Evidence: Destination_Port: 8080, Flow_Bytes_s: 61666.67
+🔍 Evidence: Destination_Port: 8080, Flow_Bytes_s: 61666.67, SYN_Flag_Count: 1
 ```
 
 ---
 
 ## ⚠️ Troubleshooting
 
-### Suricata tidak start
+### Suricata fails to start
 ```bash
 sudo suricata -T -c /etc/suricata/suricata.yaml -v
 sudo journalctl -u suricata -n 50
 ```
 
-### Model gagal load
+### Models fail to load
 ```bash
-# Pastikan semua model ada
+# Check all model files exist
 ls -la /opt/threatflow-soc/models/
 
-# Test manual
+# Test manually
 cd /opt/threatflow-soc
 python3 -c "from app.predictor import predictor; print('OK')"
 ```
 
-### WebSocket tidak connect
+### WebSocket not connecting
 ```bash
-# Cek server running
+# Check server is running
 ss -tlnp | grep 8001
 
-# Cek firewall
+# Check open ports
 firewall-cmd --list-ports
 
-# Buka port jika belum
+# Open port if missing
 sudo firewall-cmd --add-port=8001/tcp --permanent
 sudo firewall-cmd --reload
 ```
 
-### Groq rate limit
-Groq free tier memiliki limit 100k tokens/hari. Jika habis, tunggu reset keesokan harinya atau upgrade ke Dev Tier di https://console.groq.com/settings/billing
+### Groq rate limit exceeded
+Groq free tier has a limit of 100k tokens/day. If exceeded, wait for the daily reset or upgrade to Dev Tier at: https://console.groq.com/settings/billing
 
 ---
 
@@ -344,4 +418,4 @@ MIT License — Free to use for educational and research purposes.
 
 ## 👤 Author
 
-**Mubarok Ridho** — SOC ML Pipeline Project
+**Ridho Mubarok** — SOC ML Pipeline Project
